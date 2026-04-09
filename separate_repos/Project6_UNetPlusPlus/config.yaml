@@ -1,0 +1,113 @@
+data:
+  train_images: data/train/Color_Images
+  train_masks: data/train/Segmentation
+  val_images: data/val/Color_Images
+  val_masks: data/val/Segmentation
+  test_images: data/testImages/Color_Images
+  test_masks: data/testImages/Segmentation
+  image_size: 512
+model:
+  num_classes: 10
+  type: unetplusplus
+  backbone: resnet50
+training:
+  batch_size: 8
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.01
+  num_workers: 4
+  early_stopping_patience: 15
+  class_weights:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  checkpoint_dir: checkpoints
+  log_dir: runs
+testing:
+  batch_size: 4
+  num_workers: 2
+  checkpoint_path: checkpoints/best_model.pth
+  output_dir: test_results
+  num_visualizations: 5
+evaluation:
+  batch_size: 4
+  num_workers: 2
+  checkpoint_path: checkpoints/best_model.pth
+  output_dir: eval_results
+  num_visualizations: 5
+inference:
+  checkpoint_path: checkpoints/best_model.pth
+  output_dir: inference_results
+app:
+  checkpoint_path: checkpoints/best_model.pth
+  title: Off-Road Terrain Segmentation
+class_mapping:
+  100: 0
+  200: 1
+  300: 2
+  400: 3
+  500: 4
+  600: 5
+  700: 6
+  800: 7
+  900: 8
+  1000: 9
+class_names:
+  0: Trees
+  1: Lush Bushes
+  2: Dry Bushes
+  3: Grass
+  4: Dirt
+  5: Gravel
+  6: Rocks
+  7: Sand
+  8: Water
+  9: Sky
+class_colors:
+  0:
+  - 255
+  - 0
+  - 0
+  1:
+  - 0
+  - 255
+  - 0
+  2:
+  - 0
+  - 128
+  - 0
+  3:
+  - 144
+  - 238
+  - 144
+  4:
+  - 139
+  - 69
+  - 19
+  5:
+  - 169
+  - 169
+  - 169
+  6:
+  - 105
+  - 105
+  - 105
+  7:
+  - 255
+  - 255
+  - 0
+  8:
+  - 0
+  - 0
+  - 255
+  9:
+  - 135
+  - 206
+  - 235
