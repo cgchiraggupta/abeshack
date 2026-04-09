@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+
+# Data & Results
+data/*
+!data/README.md
+inference_results/
+weights_output.txt
+*.log
+
+# Models & Weights
+checkpoints/*
+!checkpoints/README.md
+*.pth
+*.pt
+
+# OS
+.DS_Store
+Thumbs.db

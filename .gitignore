@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Dataset (large files)
+data/
+!data/README.md
+
+# Checkpoints and models (large files)
+checkpoints/*.pth
+!checkpoints/README.md
+
+# Inference results
+inference_results/
+
+# Logs
+logs/
+*.log
+
+# Generated files
+*.png
+*.jpg
+*.jpeg
+confusion_matrix_*.png
+test_confusion_matrix_*.png
+model_comparison.png
+class_distribution_analysis.png
+test_report_*.txt
+distribution_*.txt
+
+# Streamlit
+.streamlit/
+
+# Jupyter
+.ipynb_checkpoints
+
+# PyTorch
+*.pt
+*.pth
+
+# Temporary files
+tmp/
+temp/

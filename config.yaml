@@ -1,0 +1,181 @@
+# Off-Road Terrain Segmentation Configuration
+
+# Dataset Configuration
+dataset:
+  train_dir: "data/train"
+  val_dir: "data/val"
+  test_dir: "data/testImages"
+  image_size: 512
+  num_classes: 10
+  
+  # Class mapping (original IDs to 0-9)
+  class_map:
+    100: 0   # Trees
+    200: 1   # Lush Bushes
+    300: 2   # Dry Grass
+    500: 3   # Dry Bushes
+    550: 4   # Ground Clutter
+    600: 5   # Flowers
+    700: 6   # Logs
+    800: 7   # Rocks
+    7100: 8  # Landscape
+    10000: 9 # Sky
+  
+  # Class names for display
+  class_names:
+    - "Trees"
+    - "Lush Bushes"
+    - "Dry Grass"
+    - "Dry Bushes"
+    - "Ground Clutter"
+    - "Flowers"
+    - "Logs"
+    - "Rocks"
+    - "Landscape"
+    - "Sky"
+  
+  # Colors for visualization (RGB)
+  colors:
+    - [34, 139, 34]    # Trees
+    - [0, 255, 0]      # Lush Bushes
+    - [189, 183, 107]  # Dry Grass
+    - [160, 82, 45]    # Dry Bushes
+    - [105, 105, 105]  # Ground Clutter
+    - [255, 0, 255]    # Flowers
+    - [139, 69, 19]    # Logs
+    - [128, 128, 128]  # Rocks
+    - [210, 180, 140]  # Landscape
+    - [135, 206, 235]  # Sky
+
+# Training Configuration
+training:
+  batch_size: 4
+  epochs: 40
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  encoder_freeze_epochs: 5
+  
+  # Class weights (computed from dataset)
+  class_weights: [50.4137, 50.4162, 2.9984, 50.4182, 50.418, 50.4183, 50.4183, 50.418, 16.598, 3.2536]
+  
+  # Loss function weights
+  loss_weights:
+    cross_entropy: 1.0
+    tversky: 1.0
+    focal: 1.0
+  
+  # Tversky loss parameters
+  tversky:
+    alpha: 0.7
+    beta: 0.3
+  
+  # Focal loss parameters
+  focal:
+    alpha: 1.0
+    gamma: 2.0
+  
+  # Learning rate scheduler
+  scheduler:
+    name: "ReduceLROnPlateau"
+    mode: "max"
+    factor: 0.5
+    patience: 3
+    min_lr: 0.000001
+  
+  # Early stopping
+  early_stopping:
+    patience: 8
+    min_delta: 0.0001
+
+# Model Configurations
+models:
+  deeplabv3plus:
+    encoder_name: "resnet101"
+    encoder_weights: "imagenet"
+  
+  unet:
+    encoder_name: "resnet34"
+    encoder_weights: "imagenet"
+  
+  pspnet:
+    encoder_name: "resnet50"
+    encoder_weights: "imagenet"
+  
+  fpn:
+    encoder_name: "resnet50"
+    encoder_weights: "imagenet"
+
+# Augmentation Configuration
+augmentation:
+  train:
+    - name: "HorizontalFlip"
+      probability: 0.5
+    
+    - name: "VerticalFlip"
+      probability: 0.3
+    
+    - name: "RandomRotate90"
+      probability: 0.5
+    
+    - name: "ShiftScaleRotate"
+      shift_limit: 0.1
+      scale_limit: 0.2
+      rotate_limit: 20
+      probability: 0.7
+    
+    - name: "ColorJitter"
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+      probability: 0.6
+    
+    - name: "GaussianBlur"
+      probability: 0.2
+    
+    - name: "CoarseDropout"
+      num_holes_range: [1, 8]
+      hole_height_range: [8, 64]
+      hole_width_range: [8, 64]
+      probability: 0.4
+    
+    - name: "Resize"
+      height: 512
+      width: 512
+  
+  val:
+    - name: "Resize"
+      height: 512
+      width: 512
+
+# Paths
+paths:
+  checkpoints: "checkpoints"
+  inference_results: "inference_results"
+  logs: "logs"
+  assets: "assets"
+
+# Hardware Configuration
+hardware:
+  device: "cuda"  # or "cpu"
+  num_workers: 2
+  pin_memory: true
+  mixed_precision: true
+
+# Evaluation Configuration
+evaluation:
+  metrics: ["dice", "iou"]
+  save_confusion_matrix: true
+  save_predictions: true
+  visualization: true
+
+# Streamlit Dashboard Configuration
+dashboard:
+  title: "Off-Road Terrain Segmentation"
+  default_model: "deeplabv3plus"
+  default_confidence: 0.5
+  default_overlay_alpha: 0.5
+  sample_images:
+    - "assets/sample1.jpg"
+    - "assets/sample2.jpg"
+    - "assets/sample3.jpg"
