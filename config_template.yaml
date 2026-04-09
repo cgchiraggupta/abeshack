@@ -1,0 +1,97 @@
+# Off-Road Terrain Segmentation Configuration
+# Consistent across all 10 projects
+
+# Dataset Configuration
+data:
+  train_images: "data/train/Color_Images"
+  train_masks: "data/train/Segmentation"
+  val_images: "data/val/Color_Images"
+  val_masks: "data/val/Segmentation"
+  test_images: "data/testImages/Color_Images"
+  test_masks: "data/testImages/Segmentation"
+  image_size: 512
+
+# Model Configuration
+model:
+  num_classes: 10
+  # Model-specific config will be added per project
+
+# Training Configuration
+training:
+  batch_size: 8
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.01
+  num_workers: 4
+  early_stopping_patience: 15
+  
+  # Class weights (balanced)
+  class_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  
+  checkpoint_dir: "checkpoints"
+  log_dir: "runs"
+
+# Testing Configuration
+testing:
+  batch_size: 4
+  num_workers: 2
+  checkpoint_path: "checkpoints/best_model.pth"
+  output_dir: "test_results"
+  num_visualizations: 5
+
+# Evaluation Configuration
+evaluation:
+  batch_size: 4
+  num_workers: 2
+  checkpoint_path: "checkpoints/best_model.pth"
+  output_dir: "eval_results"
+  num_visualizations: 5
+
+# Inference Configuration
+inference:
+  checkpoint_path: "checkpoints/best_model.pth"
+  output_dir: "inference_results"
+
+# App Configuration
+app:
+  checkpoint_path: "checkpoints/best_model.pth"
+  title: "Off-Road Terrain Segmentation"
+
+# Class mapping (original IDs to 0-9)
+class_mapping:
+  100: 0   # Trees
+  200: 1   # Lush Bushes
+  300: 2   # Dry Bushes
+  400: 3   # Grass
+  500: 4   # Dirt
+  600: 5   # Gravel
+  700: 6   # Rocks
+  800: 7   # Sand
+  900: 8   # Water
+  1000: 9  # Sky
+
+# Class names for display
+class_names:
+  0: "Trees"
+  1: "Lush Bushes"
+  2: "Dry Bushes"
+  3: "Grass"
+  4: "Dirt"
+  5: "Gravel"
+  6: "Rocks"
+  7: "Sand"
+  8: "Water"
+  9: "Sky"
+
+# Colors for visualization (RGB)
+class_colors:
+  0: [255, 0, 0]      # Trees: Red
+  1: [0, 255, 0]      # Lush Bushes: Green
+  2: [0, 128, 0]      # Dry Bushes: Dark Green
+  3: [144, 238, 144]  # Grass: Light Green
+  4: [139, 69, 19]    # Dirt: Brown
+  5: [169, 169, 169]  # Gravel: Gray
+  6: [105, 105, 105]  # Rocks: Dark Gray
+  7: [255, 255, 0]    # Sand: Yellow
+  8: [0, 0, 255]      # Water: Blue
+  9: [135, 206, 235]  # Sky: Light Blue
