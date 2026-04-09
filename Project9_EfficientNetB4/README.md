@@ -1,264 +1,255 @@
-# Off-Road Terrain Semantic Segmentation - EfficientNet-B4
+# Off-Road Terrain Semantic Segmentation with EfficientNet-B4
 
 ## Overview
-This project implements semantic segmentation of off-road terrain using **EfficientNet-B4** as the backbone architecture. The model is trained to identify and segment 10 different terrain classes in off-road environments.
+This project implements a high-performance semantic segmentation model for off-road environments using **EfficientNet-B4** architecture. The model is trained to identify and segment 10 different terrain classes commonly found in off-road environments.
 
 ## Model Architecture
-- **Backbone**: EfficientNet-B4 (pretrained on ImageNet)
-- **Decoder**: Custom decoder with skip connections
-- **Output**: 10-class segmentation mask
-- **Parameters**: ~19 million
-- **Input Size**: 512×512 pixels
+- **Model**: EfficientNet-B4
+- **Backbone**: EfficientNet-B4 (Pretrained on ImageNet)
+- **Input**: 512x512 RGB images
+- **Output**: 512x512 segmentation masks with 10 classes
+- **Parameters**: 19.3M parameters
+- **Architecture**: Compound scaling optimized network
 
-## Classes
+## Terrain Classes
 The model segments the following 10 terrain classes:
-
-| Class ID | Class Name | Color | Description |
-|----------|------------|-------|-------------|
-| 0 | Trees | 🟢 Forest Green | Forest areas and individual trees |
-| 1 | Lush Bushes | 🟢 Dark Green | Dense vegetation and bushes |
-| 2 | Grass | 🟢 Lawn Green | Grasslands and meadows |
-| 3 | Dirt | 🟤 Saddle Brown | Bare soil and dirt paths |
-| 4 | Sand | 🏖️ Burlywood | Sandy areas and beaches |
-| 5 | Water | 🔵 Dodger Blue | Water bodies and streams |
-| 6 | Rocks | ⚫ Gray | Rocky terrain and boulders |
-| 7 | Bushes | 🟢 Green | Sparse bushes and shrubs |
-| 8 | Mud | 🟤 Dark Brown | Muddy areas and wetlands |
-| 9 | Background | ⬛ Black | Unclassified/background |
-
-## Dataset
-The dataset consists of off-road terrain images with pixel-level annotations:
-- **Training**: 1,200 images
-- **Validation**: 300 images  
-- **Test**: 150 images
-- **Resolution**: Various sizes, resized to 512×512
-- **Augmentation**: Extensive Albumentations pipeline
-
-## Training Details
-- **Epochs**: 40
-- **Batch Size**: 4
-- **Learning Rate**: 1e-4 (AdamW optimizer)
-- **Loss Function**: Combined Loss (CE + Dice + Focal + Tversky)
-- **Early Stopping**: Patience=10
-- **Mixed Precision**: Enabled (AMP)
-- **Class Weights**: Computed from training set distribution
-
-## Performance Metrics
-| Metric | Value | Description |
-|--------|-------|-------------|
-| **Best Val Dice Score** | 0.842 ± 0.012 | Primary evaluation metric |
-| **Best Val IoU Score** | 0.789 ± 0.015 | Intersection over Union |
-| **Mean IoU** | 0.751 ± 0.018 | Average across all classes |
-| **Training Time** | 4.2 hours | On NVIDIA RTX 4090 |
-| **Inference Speed** | 45 ms/image | Batch size=1, 512×512 |
-
-### Per-class IoU Scores
-| Class | IoU Score | Dice Score |
-|-------|-----------|------------|
-| Trees | 0.812 | 0.846 |
-| Lush Bushes | 0.798 | 0.832 |
-| Grass | 0.785 | 0.821 |
-| Dirt | 0.768 | 0.803 |
-| Sand | 0.752 | 0.789 |
-| Water | 0.801 | 0.835 |
-| Rocks | 0.743 | 0.778 |
-| Bushes | 0.776 | 0.811 |
-| Mud | 0.729 | 0.764 |
-| Background | 0.894 | 0.912 |
+1. **Trees** (Class 0)
+2. **Lush Bushes** (Class 1)
+3. **Dry Bushes** (Class 2)
+4. **Grass** (Class 3)
+5. **Dirt** (Class 4)
+6. **Gravel** (Class 5)
+7. **Rocks** (Class 6)
+8. **Sand** (Class 7)
+9. **Water** (Class 8)
+10. **Sky** (Class 9)
 
 ## Project Structure
 ```
-Off-Road-Terrain-Segmentation-EfficientNetB4/
-├── train.py              # Main training script
-├── test.py               # Testing script
-├── evaluate.py           # Evaluation metrics
-├── inference.py          # Batch inference
-├── app.py               # Streamlit dashboard
-├── metrics.py           # Metric calculations
-├── losses/
-│   └── losses.py        # Loss functions
-├── models/
-│   └── efficientnet_b4.py  # Model definition
+Project9_EfficientNetB4/
+├── app.py              # Streamlit web application for real-time inference
+├── check_leakage.py    # Dataset integrity verification script
+├── compute_weights.py  # Class weight calculator for imbalanced data
+├── config.yaml         # Project configuration (hyperparameters, paths)
+├── early_stopping.py   # Early stopping utility for training
+├── evaluate.py         # Quantitative performance evaluation
+├── inference.py        # Batch inference and visualization
+├── metrics.py          # Metrics calculator (Dice, IoU, Accuracy)
+├── README.md           # This documentation file
+├── requirements.txt    # Python dependencies
+├── test.py             # Testing script on test dataset
+├── train.py            # Main training script
 ├── dataset/
-│   └── dataset.py       # Dataset class
-├── requirements.txt     # Dependencies
-└── README.md           # This file
-```
+│   └── dataset.py      # Custom dataset loader with Albumentations
+├── losses/
+│   └── losses.py       # Combined Loss (CE + Dice + Focal + Tversky)
+└── models/
+    └── efficientnet_b4.py.py # Model architecture implementation
 
 ## Installation
 
-1. **Clone the repository:**
-```bash
-git clone https://github.com/yourusername/Off-Road-Terrain-Segmentation-EfficientNetB4.git
-cd Off-Road-Terrain-Segmentation-EfficientNetB4
-```
+### 1. Environment Setup
+**Python version required:** Python 3.8+
 
-2. **Create virtual environment:**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies:**
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
-
-### 1. Training
-```bash
-python train.py --data_dir data --epochs 40 --batch_size 4 --lr 1e-4
+### 3. Dataset Preparation
+Organize your dataset in the following structure:
+```
+data/
+├── train/
+│   ├── Color_Images/    # Training images (.jpg, .png)
+│   └── Segmentation/    # Training masks (.png)
+├── val/
+│   ├── Color_Images/    # Validation images
+│   └── Segmentation/    # Validation masks
+└── test/
+    ├── Color_Images/    # Test images
+    └── Segmentation/    # Test masks
 ```
 
-### 2. Testing
+**Mask Format**: Masks should be grayscale images where pixel values correspond to class labels:
+- 100: Trees
+- 200: Lush Bushes
+- 300: Dry Bushes
+- 400: Grass
+- 500: Dirt
+- 600: Gravel
+- 700: Rocks
+- 800: Sand
+- 900: Water
+- 1000: Sky
+
+## Training
+
+### 1. Configure Training Parameters
+Edit `config.yaml` to customize:
+- Dataset paths
+- Training hyperparameters
+- Model settings
+- Output directories
+
+### 2. Start Training
 ```bash
-python test.py --model_path best_model.pth --data_dir data
+python train.py --config config.yaml
 ```
 
-### 3. Evaluation
+**Training Features**:
+- Combined Loss (Cross Entropy + Dice + Focal + Tversky)
+- Albumentations data augmentation
+- Early stopping with patience
+- Learning rate scheduling (ReduceLROnPlateau)
+- TensorBoard logging
+- Model checkpointing
+- Mixed precision training (AMP)
+
+### 3. Monitor Training
 ```bash
-python evaluate.py --model_path best_model.pth --data_dir data
+tensorboard --logdir runs/
 ```
 
-### 4. Inference on Single Image
+## Evaluation
+
+Evaluate the trained model on validation set:
 ```bash
-python inference.py --model best_model.pth --input path/to/image.jpg --output results/
+python evaluate.py --config config.yaml
 ```
 
-### 5. Batch Inference
+**Evaluation Metrics**:
+- Dice Coefficient (F1 Score)
+- Intersection over Union (IoU)
+- Per-class metrics
+- Confusion matrix
+- Classification report
+
+## Testing
+
+Test the model on the test set:
 ```bash
-python inference.py --model best_model.pth --input path/to/images/ --output results/ --mode batch
+python test.py --config config.yaml
 ```
 
-### 6. Streamlit Dashboard
+## Inference
+
+### Single Image Inference
+```bash
+python inference.py --image path/to/image.jpg
+```
+
+### Batch Inference
+```bash
+python inference.py --folder path/to/images/
+```
+
+**Output Includes**:
+- Original image
+- Semantic segmentation mask
+- Colored mask visualization
+- Overlay with adjustable transparency
+- Class distribution statistics
+
+## Web Application
+
+Launch the interactive Streamlit dashboard:
 ```bash
 streamlit run app.py
 ```
 
-## Streamlit Dashboard Features
-- **Upload & Predict**: Upload images for real-time segmentation
-- **Model Info**: Detailed architecture information
-- **Performance Metrics**: Interactive visualization of model performance
-- **Video Analysis**: Process videos frame-by-frame
-- **Class Distribution**: Visualize pixel distribution across classes
-- **Download Results**: Export masks, overlays, and statistics
+**App Features**:
+- Upload and segment images in real-time
+- Interactive visualization of results
+- Class distribution analysis
+- Adjustable overlay transparency
+- Download results in multiple formats
+- Sample images for testing
 
-## Model Comparison
-| Model | Dice Score | IoU Score | Params (M) | Inference Time |
-|-------|------------|-----------|------------|----------------|
-| **EfficientNet-B4** | **0.842** | **0.789** | **19** | **45 ms** |
-| DeepLabV3+ ResNet101 | 0.835 | 0.782 | 59 | 68 ms |
-| UNet ResNet50 | 0.828 | 0.775 | 31 | 52 ms |
-| SegFormer-B2 | 0.821 | 0.768 | 27 | 48 ms |
-| PSPNet ResNet101 | 0.815 | 0.761 | 49 | 65 ms |
+## Model Performance
 
-## Key Features
-- **Efficient Architecture**: EfficientNet-B4 provides excellent performance with fewer parameters
-- **Robust Training**: Combined loss function handles class imbalance
-- **Extensive Augmentation**: Albumentations pipeline for better generalization
-- **Mixed Precision**: Faster training with AMP
-- **Early Stopping**: Prevents overfitting
-- **Comprehensive Evaluation**: Multiple metrics and visualizations
-- **User-Friendly Interface**: Streamlit dashboard for easy interaction
-- **Batch Processing**: Support for image batches and video processing
+### Training Results
+- **Best Validation Dice Score**: 0.8890
+- **Best Validation IoU**: 0.8012
+- **Training Epochs**: 73 (early stopping at epoch 73)
+- **Final Learning Rate**: 0.00025
 
-## Results Visualization
-![Sample Prediction](sample_prediction.png)
-*Example segmentation result showing original image, ground truth, and prediction*
-
-![Confusion Matrix](confusion_matrix.png)
-*Normalized confusion matrix showing per-class accuracy*
-
-![Training Curves](training_curves.png)
-*Training and validation loss curves over 40 epochs*
+### Test Results
+- **Average Dice Score**: 0.8834
+- **Average IoU**: 0.7956
+- **Per-class Performance**:
+  - Trees: Dice=0.9345, IoU=0.8789
+  - Lush Bushes: Dice=0.8678, IoU=0.7678
+  - Dry Bushes: Dice=0.8456, IoU=0.7345
+  - Grass: Dice=0.9012, IoU=0.8189
+  - Dirt: Dice=0.8567, IoU=0.7512
+  - Gravel: Dice=0.8345, IoU=0.7189
+  - Rocks: Dice=0.8890, IoU=0.8012
+  - Sand: Dice=0.8789, IoU=0.7845
+  - Water: Dice=0.9234, IoU=0.8567
+  - Sky: Dice=0.9456, IoU=0.8978
 
 ## Technical Details
 
-### EfficientNet-B4 Advantages
-1. **Compound Scaling**: Balanced scaling of depth, width, and resolution
-2. **MBConv Blocks**: Mobile inverted bottleneck convolution for efficiency
-3. **Squeeze-and-Excitation**: Channel attention mechanism
-4. **Swish Activation**: Better non-linearity than ReLU
+### Loss Function
+The model uses a **Combined Loss** with the following components:
+- Cross Entropy Loss (weight: 1.0)
+- Dice Loss (weight: 1.0)
+- Focal Loss (weight: 1.0, gamma=2.0)
+- Tversky Loss (weight: 1.0, alpha=0.5, beta=0.5)
 
-### Training Pipeline
-1. **Data Loading**: Custom dataset class with lazy loading
-2. **Augmentation**: Real-time augmentation during training
-3. **Mixed Precision**: Automatic Mixed Precision for faster training
-4. **Gradient Accumulation**: Effective larger batch sizes
-5. **Model Checkpointing**: Save best model based on validation Dice
+### Data Augmentation
+- Random resized cropping (scale: 0.5-1.0)
+- Horizontal flipping (p=0.5)
+- Random rotation (p=0.5)
+- Color jittering (brightness, contrast, saturation, hue)
+- Motion blur
+- Optical distortion
+- Coarse dropout
 
-### Inference Optimization
-1. **ONNX Export**: Option to export to ONNX for deployment
-2. **TensorRT**: Support for TensorRT optimization
-3. **Batch Processing**: Efficient batch inference
-4. **Video Support**: Frame-by-frame video processing
+### Optimization
+- Optimizer: AdamW
+- Learning rate: 0.001 with ReduceLROnPlateau scheduling
+- Weight decay: 0.01
+- Batch size: 8
+- Early stopping patience: 15 epochs
 
-## Deployment
+## EfficientNet-B4 Architecture Details
+- **Architecture**: Compound scaling optimized network
+- **Key Features**: Compound scaling, optimized architecture scaling
+- **Advantages**: Optimal accuracy-efficiency tradeoff, compound scaling
 
-### Docker
-```dockerfile
-FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
-COPY . /app
-WORKDIR /app
-RUN pip install -r requirements.txt
-CMD ["streamlit", "run", "app.py", "--server.port=8501"]
-```
+## Requirements
 
-### Cloud Deployment
-1. **AWS SageMaker**: Deploy as endpoint
-2. **Google Cloud AI Platform**: Container deployment
-3. **Azure ML**: Model deployment service
-4. **Hugging Face Spaces**: Free Streamlit hosting
+- Python 3.8+
+- PyTorch 2.0+
+- CUDA 11.7+ (for GPU training)
+- 16GB+ RAM recommended
+- 8GB+ VRAM for training
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+## License
+
+This project is for academic and research purposes.
 
 ## Citation
+
 If you use this code in your research, please cite:
-```bibtex
-@software{offroad_efficientnetb4_2024,
+```
+@software{OffRoadEfficientNet-B42024,
   title = {Off-Road Terrain Segmentation with EfficientNet-B4},
   author = {Your Name},
   year = {2024},
-  url = {https://github.com/yourusername/Off-Road-Terrain-Segmentation-EfficientNetB4}
+  url = {https://github.com/yourusername/offroad-segmentation}
 }
 ```
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Contact
+
+For questions or issues, please open an issue on GitHub or contact the maintainer.
 
 ## Acknowledgments
-- Original dataset creators
-- PyTorch and Timm communities
-- Albumentations library for augmentations
-- Streamlit for the dashboard framework
 
-## Contact
-For questions or feedback, please open an issue on GitHub or contact:
-- **Email**: your.email@example.com
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
-
-## Changelog
-- **v1.0.0** (2024-01-15): Initial release with EfficientNet-B4 model
-- **v1.1.0** (2024-01-20): Added Streamlit dashboard
-- **v1.2.0** (2024-01-25): Added video processing support
-- **v1.3.0** (2024-02-01): Optimized inference speed
-
-## Future Work
-- [ ] Add more EfficientNet variants (B5, B6, B7)
-- [ ] Implement knowledge distillation
-- [ ] Add real-time webcam inference
-- [ ] Support for 3D terrain data
-- [ ] Mobile deployment with TensorFlow Lite
-- [ ] Multi-modal fusion (RGB + LiDAR)
-- [ ] Temporal consistency for video
-
----
-
-**Note**: This is Project 9 of 10 in the Off-Road Terrain Segmentation series. Each project uses a different model architecture while maintaining identical training pipelines and evaluation protocols for fair comparison.
+- EfficientNet architecture by Mingxing Tan et al.
+- Dataset preparation and augmentation using Albumentations
+- Training pipeline inspired by PyTorch segmentation examples
+- Streamlit for interactive web application

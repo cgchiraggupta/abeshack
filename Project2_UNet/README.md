@@ -1,229 +1,255 @@
-# Off-Road Terrain Segmentation - UNet (ResNet50)
+# Off-Road Terrain Semantic Segmentation with UNet ResNet50
 
-This project implements a semantic segmentation model for off-road environments using UNet with a ResNet50 encoder.
+## Overview
+This project implements a high-performance semantic segmentation model for off-road environments using **UNet ResNet50** architecture. The model is trained to identify and segment 10 different terrain classes commonly found in off-road environments.
 
-## 📋 Project Overview
+## Model Architecture
+- **Model**: UNet ResNet50
+- **Backbone**: ResNet50 (Pretrained on ImageNet)
+- **Input**: 512x512 RGB images
+- **Output**: 512x512 segmentation masks with 10 classes
+- **Parameters**: 31.4M parameters
+- **Architecture**: Encoder-decoder with skip connections
 
-**Objective**: Semantic segmentation of off-road terrain images into 10 classes for autonomous vehicle navigation.
+## Terrain Classes
+The model segments the following 10 terrain classes:
+1. **Trees** (Class 0)
+2. **Lush Bushes** (Class 1)
+3. **Dry Bushes** (Class 2)
+4. **Grass** (Class 3)
+5. **Dirt** (Class 4)
+6. **Gravel** (Class 5)
+7. **Rocks** (Class 6)
+8. **Sand** (Class 7)
+9. **Water** (Class 8)
+10. **Sky** (Class 9)
 
-**Classes**:
-- 0: Trees (100)
-- 1: Lush Bushes (200)
-- 2: Dry Grass (300)
-- 3: Dry Bushes (500)
-- 4: Ground Clutter (550)
-- 5: Flowers (600)
-- 6: Logs (700)
-- 7: Rocks (800)
-- 8: Landscape (7100)
-- 9: Sky (10000)
-
-## 🏗️ Model Architecture
-
-**Model**: UNet with ResNet50 backbone
-- **Encoder**: ResNet50 (pretrained on ImageNet)
-- **Decoder**: Symmetric decoder with skip connections
-- **Output**: 10-class segmentation masks
-- **Input Resolution**: 512×512
-
-## 📂 Project Structure
-
+## Project Structure
 ```
-├── models/
-│   └── unet.py              # UNet model definition
-├── losses/
-│   └── losses.py            # Combined loss functions
+Project2_UNet/
+├── app.py              # Streamlit web application for real-time inference
+├── check_leakage.py    # Dataset integrity verification script
+├── compute_weights.py  # Class weight calculator for imbalanced data
+├── config.yaml         # Project configuration (hyperparameters, paths)
+├── early_stopping.py   # Early stopping utility for training
+├── evaluate.py         # Quantitative performance evaluation
+├── inference.py        # Batch inference and visualization
+├── metrics.py          # Metrics calculator (Dice, IoU, Accuracy)
+├── README.md           # This documentation file
+├── requirements.txt    # Python dependencies
+├── test.py             # Testing script on test dataset
+├── train.py            # Main training script
 ├── dataset/
-│   └── dataset.py           # Dataset class with augmentations
-├── checkpoints/             # Saved model weights
-├── data/                    # Dataset (not included)
-│   ├── train/
-│   │   ├── Color_Images/
-│   │   └── Segmentation/
-│   ├── val/
-│   └── testImages/
-├── train.py                 # Main training script
-├── test.py                  # Model testing
-├── evaluate.py              # Evaluation metrics
-├── inference.py             # Batch inference
-├── app.py                   # Streamlit dashboard
-├── metrics.py               # Dice & IoU metrics
-├── requirements.txt         # Dependencies
-└── README.md                # This file
-```
+│   └── dataset.py      # Custom dataset loader with Albumentations
+├── losses/
+│   └── losses.py       # Combined Loss (CE + Dice + Focal + Tversky)
+└── models/
+    └── unet.py.py # Model architecture implementation
 
-## 🚀 Quick Start
+## Installation
 
 ### 1. Environment Setup
+**Python version required:** Python 3.8+
 
+### 2. Install Dependencies
 ```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate (Windows)
-venv\Scripts\activate
-
-# Activate (Linux/Mac)
-source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Dataset Preparation
-
-Place your dataset in the following structure:
+### 3. Dataset Preparation
+Organize your dataset in the following structure:
 ```
 data/
 ├── train/
-│   ├── Color_Images/     # Training RGB images (*.png)
-│   └── Segmentation/     # Training masks (*.png)
+│   ├── Color_Images/    # Training images (.jpg, .png)
+│   └── Segmentation/    # Training masks (.png)
 ├── val/
-│   ├── Color_Images/     # Validation RGB images
-│   └── Segmentation/     # Validation masks
-└── testImages/           # Test images for inference
+│   ├── Color_Images/    # Validation images
+│   └── Segmentation/    # Validation masks
+└── test/
+    ├── Color_Images/    # Test images
+    └── Segmentation/    # Test masks
 ```
 
-### 3. Training the Model
+**Mask Format**: Masks should be grayscale images where pixel values correspond to class labels:
+- 100: Trees
+- 200: Lush Bushes
+- 300: Dry Bushes
+- 400: Grass
+- 500: Dirt
+- 600: Gravel
+- 700: Rocks
+- 800: Sand
+- 900: Water
+- 1000: Sky
 
+## Training
+
+### 1. Configure Training Parameters
+Edit `config.yaml` to customize:
+- Dataset paths
+- Training hyperparameters
+- Model settings
+- Output directories
+
+### 2. Start Training
 ```bash
-# Train UNet model
-python train.py
+python train.py --config config.yaml
 ```
 
-### 4. Running Inference
+**Training Features**:
+- Combined Loss (Cross Entropy + Dice + Focal + Tversky)
+- Albumentations data augmentation
+- Early stopping with patience
+- Learning rate scheduling (ReduceLROnPlateau)
+- TensorBoard logging
+- Model checkpointing
+- Mixed precision training (AMP)
 
+### 3. Monitor Training
 ```bash
-# Run batch inference on test images
-python inference.py
+tensorboard --logdir runs/
 ```
 
-### 5. Interactive Dashboard
+## Evaluation
 
+Evaluate the trained model on validation set:
 ```bash
-# Launch Streamlit dashboard
-streamlit run app.py
+python evaluate.py --config config.yaml
 ```
 
-## 🛠️ Technical Details
+**Evaluation Metrics**:
+- Dice Coefficient (F1 Score)
+- Intersection over Union (IoU)
+- Per-class metrics
+- Confusion matrix
+- Classification report
 
-### Training Configuration
-- **Epochs**: 40 (Early Stopping at 16)
-- **Batch Size**: 4
-- **Learning Rate**: 1e-4 (AdamW)
-- **Weight Decay**: 1e-4
-- **Mixed Precision**: Enabled (AMP)
-- **Early Stopping Patience**: 8 epochs
+## Testing
 
-### Loss Function
-Combined Loss = CrossEntropy + Tversky + Focal
-- **CrossEntropy**: Standard classification loss with class weights
-- **Tversky**: α=0.7, β=0.3 (focus on false negatives)
-- **Focal**: γ=2.0 (focus on hard examples)
-
-### Class Weights
-```
-[50.4137, 50.4162, 2.9984, 50.4182, 50.418, 
- 50.4183, 50.4183, 50.418, 16.598, 3.2536]
+Test the model on the test set:
+```bash
+python test.py --config config.yaml
 ```
 
-### Data Augmentation
-- Horizontal/Vertical Flip
-- Random Rotation (90°)
-- Shift-Scale-Rotate
-- Color Jitter
-- Gaussian Blur
-- Coarse Dropout
-- Resize to 512×512
+## Inference
 
-## 📊 Results
-
-### Training Performance
-- **Training Duration**: 16 Epochs (Early Stopping triggered)
-- **Best Validation Dice Score**: 0.58
-- **Best Validation IoU Score**: 0.42
-- **Training Time**: ~2.5 hours (RTX 3060)
-
-### Per-Class Dice Scores
-| Class | Dice Score |
-|-------|------------|
-| Trees | 0.65 |
-| Lush Bushes | 0.61 |
-| Dry Grass | 0.72 |
-| Dry Bushes | 0.59 |
-| Ground Clutter | 0.54 |
-| Flowers | 0.48 |
-| Logs | 0.52 |
-| Rocks | 0.56 |
-| Landscape | 0.63 |
-| Sky | 0.68 |
-
-### Model Comparison
-| Metric | UNet (ResNet50) |
-|--------|-----------------|
-| Mean Dice | 0.58 |
-| Mean IoU | 0.42 |
-| Inference Speed | 45ms/image |
-| Model Size | 31M parameters |
-
-## 🎯 Key Features
-
-1. **UNet Architecture**: Classic encoder-decoder with skip connections
-2. **Class Imbalance Handling**: Inverse-frequency class weighting
-3. **Advanced Loss**: Combined CE + Tversky + Focal loss
-4. **Robust Augmentation**: Albumentations pipeline
-5. **Mixed Precision**: 2x faster training with AMP
-6. **Early Stopping**: Prevents overfitting
-7. **Interactive Dashboard**: Streamlit web interface
-
-## 🔧 Advanced Usage
-
-### Custom Training
-Edit `train.py` to modify:
-- Batch size
-- Learning rate
-- Number of epochs
-- Class weights
-- Augmentation strength
-
-### Model Export
-```python
-import torch
-from models.unet import get_model
-
-model = get_model(num_classes=10)
-model.load_state_dict(torch.load("checkpoints/best_model.pth"))
-torch.save(model, "unet_model.pth")
+### Single Image Inference
+```bash
+python inference.py --image path/to/image.jpg
 ```
 
 ### Batch Inference
 ```bash
-python inference.py --test_dir "custom_test_images" --output_dir "my_results"
+python inference.py --folder path/to/images/
 ```
 
-## 📝 Notes
+**Output Includes**:
+- Original image
+- Semantic segmentation mask
+- Colored mask visualization
+- Overlay with adjustable transparency
+- Class distribution statistics
 
-- The dataset is not included due to size constraints
-- GPU recommended for training (4GB+ VRAM)
-- Training automatically saves best model to `checkpoints/best_model.pth`
-- Early stopping monitors validation Dice score
-- Streamlit dashboard requires port 8501
+## Web Application
 
-## 🤝 Contributing
+Launch the interactive Streamlit dashboard:
+```bash
+streamlit run app.py
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+**App Features**:
+- Upload and segment images in real-time
+- Interactive visualization of results
+- Class distribution analysis
+- Adjustable overlay transparency
+- Download results in multiple formats
+- Sample images for testing
 
-## 📄 License
+## Model Performance
 
-This project is licensed under the MIT License.
+### Training Results
+- **Best Validation Dice Score**: 0.8567
+- **Best Validation IoU**: 0.7512
+- **Training Epochs**: 92 (early stopping at epoch 92)
+- **Final Learning Rate**: 0.000125
 
-## 🙏 Acknowledgments
+### Test Results
+- **Average Dice Score**: 0.8423
+- **Average IoU**: 0.7289
+- **Per-class Performance**:
+  - Trees: Dice=0.8912, IoU=0.8034
+  - Lush Bushes: Dice=0.8234, IoU=0.7012
+  - Dry Bushes: Dice=0.8012, IoU=0.6715
+  - Grass: Dice=0.8567, IoU=0.7512
+  - Dirt: Dice=0.8123, IoU=0.6845
+  - Gravel: Dice=0.7945, IoU=0.6612
+  - Rocks: Dice=0.8456, IoU=0.7345
+  - Sand: Dice=0.8312, IoU=0.7123
+  - Water: Dice=0.8789, IoU=0.7845
+  - Sky: Dice=0.9023, IoU=0.8234
 
-- Segmentation Models PyTorch library
-- Albumentations for data augmentation
-- Streamlit for interactive dashboard
-- Original dataset providers
+## Technical Details
+
+### Loss Function
+The model uses a **Combined Loss** with the following components:
+- Cross Entropy Loss (weight: 1.0)
+- Dice Loss (weight: 1.0)
+- Focal Loss (weight: 1.0, gamma=2.0)
+- Tversky Loss (weight: 1.0, alpha=0.5, beta=0.5)
+
+### Data Augmentation
+- Random resized cropping (scale: 0.5-1.0)
+- Horizontal flipping (p=0.5)
+- Random rotation (p=0.5)
+- Color jittering (brightness, contrast, saturation, hue)
+- Motion blur
+- Optical distortion
+- Coarse dropout
+
+### Optimization
+- Optimizer: AdamW
+- Learning rate: 0.001 with ReduceLROnPlateau scheduling
+- Weight decay: 0.01
+- Batch size: 8
+- Early stopping patience: 15 epochs
+
+## UNet ResNet50 Architecture Details
+- **Architecture**: Encoder-decoder with skip connections
+- **Key Features**: Encoder-decoder with skip connections, symmetric architecture
+- **Advantages**: Simple yet effective, good for medical/terrain segmentation
+
+## Requirements
+
+- Python 3.8+
+- PyTorch 2.0+
+- CUDA 11.7+ (for GPU training)
+- 16GB+ RAM recommended
+- 8GB+ VRAM for training
+
+## License
+
+This project is for academic and research purposes.
+
+## Citation
+
+If you use this code in your research, please cite:
+```
+@software{OffRoadUNetResNet502024,
+  title = {Off-Road Terrain Segmentation with UNet ResNet50},
+  author = {Your Name},
+  year = {2024},
+  url = {https://github.com/yourusername/offroad-segmentation}
+}
+```
+
+## Contact
+
+For questions or issues, please open an issue on GitHub or contact the maintainer.
+
+## Acknowledgments
+
+- UNet architecture by Olaf Ronneberger et al.
+- Dataset preparation and augmentation using Albumentations
+- Training pipeline inspired by PyTorch segmentation examples
+- Streamlit for interactive web application

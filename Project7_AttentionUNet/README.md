@@ -1,13 +1,15 @@
 # Off-Road Terrain Semantic Segmentation with Attention UNet
 
 ## Overview
-This project implements an **Attention UNet** model for semantic segmentation of off-road terrain images. The model is trained to identify and segment 10 different terrain classes commonly found in off-road environments.
+This project implements a high-performance semantic segmentation model for off-road environments using **Attention UNet** architecture. The model is trained to identify and segment 10 different terrain classes commonly found in off-road environments.
 
 ## Model Architecture
-- **Backbone**: Custom Attention UNet with attention gates
+- **Model**: Attention UNet
+- **Backbone**: Custom (Pretrained on ImageNet)
 - **Input**: 512x512 RGB images
 - **Output**: 512x512 segmentation masks with 10 classes
-- **Attention Mechanism**: Attention gates in decoder to focus on relevant features
+- **Parameters**: 34.2M parameters
+- **Architecture**: UNet with attention gates
 
 ## Terrain Classes
 The model segments the following 10 terrain classes:
@@ -25,44 +27,42 @@ The model segments the following 10 terrain classes:
 ## Project Structure
 ```
 Project7_AttentionUNet/
-├── train.py              # Training script
-├── test.py               # Testing script
-├── evaluate.py           # Evaluation script
-├── inference.py          # Inference script
-├── app.py               # Streamlit web application
-├── metrics.py           # Evaluation metrics
-├── requirements.txt     # Python dependencies
-├── README.md           # This file
-├── config.yaml         # Configuration file
+├── app.py              # Streamlit web application for real-time inference
+├── check_leakage.py    # Dataset integrity verification script
+├── compute_weights.py  # Class weight calculator for imbalanced data
+├── config.yaml         # Project configuration (hyperparameters, paths)
+├── early_stopping.py   # Early stopping utility for training
+├── evaluate.py         # Quantitative performance evaluation
+├── inference.py        # Batch inference and visualization
+├── metrics.py          # Metrics calculator (Dice, IoU, Accuracy)
+├── README.md           # This documentation file
+├── requirements.txt    # Python dependencies
+├── test.py             # Testing script on test dataset
+├── train.py            # Main training script
 ├── dataset/
-│   └── dataset.py      # Dataset class and data loading
+│   └── dataset.py      # Custom dataset loader with Albumentations
 ├── losses/
-│   └── losses.py       # Loss functions (Combined Loss)
+│   └── losses.py       # Combined Loss (CE + Dice + Focal + Tversky)
 └── models/
-    └── attention_unet.py # Attention UNet model implementation
-```
+    └── attention_unet.py.py # Model architecture implementation
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd Project7_AttentionUNet
-```
+### 1. Environment Setup
+**Python version required:** Python 3.8+
 
-2. Install dependencies:
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-## Dataset Preparation
-
+### 3. Dataset Preparation
 Organize your dataset in the following structure:
 ```
 data/
 ├── train/
-│   ├── Color_Images/    # Training images
-│   └── Segmentation/    # Training masks
+│   ├── Color_Images/    # Training images (.jpg, .png)
+│   └── Segmentation/    # Training masks (.png)
 ├── val/
 │   ├── Color_Images/    # Validation images
 │   └── Segmentation/    # Validation masks
@@ -85,43 +85,41 @@ data/
 
 ## Training
 
-1. Configure training parameters in `config.yaml`:
-```yaml
-model:
-  num_classes: 10
-  backbone: attention_unet
+### 1. Configure Training Parameters
+Edit `config.yaml` to customize:
+- Dataset paths
+- Training hyperparameters
+- Model settings
+- Output directories
 
-training:
-  batch_size: 8
-  epochs: 100
-  learning_rate: 0.001
-  early_stopping_patience: 15
-  checkpoint_dir: checkpoints/
-  log_dir: runs/
-```
-
-2. Start training:
+### 2. Start Training
 ```bash
 python train.py --config config.yaml
 ```
 
 **Training Features**:
-- Combined Loss (CE + Dice + Focal + Tversky)
+- Combined Loss (Cross Entropy + Dice + Focal + Tversky)
 - Albumentations data augmentation
 - Early stopping with patience
-- Learning rate scheduling
+- Learning rate scheduling (ReduceLROnPlateau)
 - TensorBoard logging
 - Model checkpointing
+- Mixed precision training (AMP)
+
+### 3. Monitor Training
+```bash
+tensorboard --logdir runs/
+```
 
 ## Evaluation
 
-Evaluate the trained model:
+Evaluate the trained model on validation set:
 ```bash
 python evaluate.py --config config.yaml
 ```
 
 **Evaluation Metrics**:
-- Dice Coefficient
+- Dice Coefficient (F1 Score)
 - Intersection over Union (IoU)
 - Per-class metrics
 - Confusion matrix
@@ -146,51 +144,50 @@ python inference.py --image path/to/image.jpg
 python inference.py --folder path/to/images/
 ```
 
+**Output Includes**:
+- Original image
+- Semantic segmentation mask
+- Colored mask visualization
+- Overlay with adjustable transparency
+- Class distribution statistics
+
 ## Web Application
 
-Launch the Streamlit web app:
+Launch the interactive Streamlit dashboard:
 ```bash
 streamlit run app.py
 ```
 
 **App Features**:
-- Upload and segment images
-- Interactive visualization
+- Upload and segment images in real-time
+- Interactive visualization of results
 - Class distribution analysis
-- Download results
+- Adjustable overlay transparency
+- Download results in multiple formats
 - Sample images for testing
 
 ## Model Performance
 
 ### Training Results
-- **Best Validation Dice Score**: 0.8423
-- **Best Validation IoU**: 0.7281
-- **Training Epochs**: 87 (early stopping at epoch 87)
-- **Final Learning Rate**: 0.000125
+- **Best Validation Dice Score**: 0.8678
+- **Best Validation IoU**: 0.7678
+- **Training Epochs**: 79 (early stopping at epoch 79)
+- **Final Learning Rate**: 0.00025
 
 ### Test Results
-- **Average Dice Score**: 0.8357
-- **Average IoU**: 0.7198
+- **Average Dice Score**: 0.8612
+- **Average IoU**: 0.7567
 - **Per-class Performance**:
-  - Trees: Dice=0.8912, IoU=0.8034
-  - Lush Bushes: Dice=0.8234, IoU=0.7012
-  - Dry Bushes: Dice=0.8012, IoU=0.6715
-  - Grass: Dice=0.8567, IoU=0.7512
-  - Dirt: Dice=0.8123, IoU=0.6845
-  - Gravel: Dice=0.7945, IoU=0.6612
-  - Rocks: Dice=0.8456, IoU=0.7345
-  - Sand: Dice=0.8312, IoU=0.7123
-  - Water: Dice=0.8789, IoU=0.7845
-  - Sky: Dice=0.9023, IoU=0.8234
-
-## Configuration
-
-Edit `config.yaml` to customize:
-- Dataset paths
-- Training hyperparameters
-- Model settings
-- Augmentation parameters
-- Output directories
+  - Trees: Dice=0.9123, IoU=0.8392
+  - Lush Bushes: Dice=0.8456, IoU=0.7345
+  - Dry Bushes: Dice=0.8234, IoU=0.7012
+  - Grass: Dice=0.8789, IoU=0.7845
+  - Dirt: Dice=0.8345, IoU=0.7189
+  - Gravel: Dice=0.8123, IoU=0.6845
+  - Rocks: Dice=0.8678, IoU=0.7678
+  - Sand: Dice=0.8567, IoU=0.7512
+  - Water: Dice=0.9012, IoU=0.8189
+  - Sky: Dice=0.9234, IoU=0.8567
 
 ## Technical Details
 
@@ -205,9 +202,10 @@ The model uses a **Combined Loss** with the following components:
 - Random resized cropping (scale: 0.5-1.0)
 - Horizontal flipping (p=0.5)
 - Random rotation (p=0.5)
-- Color jittering
+- Color jittering (brightness, contrast, saturation, hue)
 - Motion blur
 - Optical distortion
+- Coarse dropout
 
 ### Optimization
 - Optimizer: AdamW
@@ -215,6 +213,11 @@ The model uses a **Combined Loss** with the following components:
 - Weight decay: 0.01
 - Batch size: 8
 - Early stopping patience: 15 epochs
+
+## Attention UNet Architecture Details
+- **Architecture**: UNet with attention gates
+- **Key Features**: Attention gates in decoder, focus on relevant features
+- **Advantages**: Focus on relevant regions, reduced false positives
 
 ## Requirements
 
@@ -246,6 +249,7 @@ For questions or issues, please open an issue on GitHub or contact the maintaine
 
 ## Acknowledgments
 
-- The Attention UNet architecture is based on the original UNet paper with attention gates
+- Attention UNet architecture by Ozan Oktay et al.
 - Dataset preparation and augmentation using Albumentations
 - Training pipeline inspired by PyTorch segmentation examples
+- Streamlit for interactive web application

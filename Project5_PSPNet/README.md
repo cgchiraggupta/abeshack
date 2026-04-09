@@ -1,261 +1,255 @@
-# Off-Road Terrain Semantic Segmentation with PSPNet
+# Off-Road Terrain Semantic Segmentation with PSPNet ResNet101
 
-![PSPNet Architecture](https://miro.medium.com/v2/resize:fit:1400/1*_J7Xr8yE-Ft2dKZ4KpFmCg.png)
+## Overview
+This project implements a high-performance semantic segmentation model for off-road environments using **PSPNet ResNet101** architecture. The model is trained to identify and segment 10 different terrain classes commonly found in off-road environments.
 
-## 📋 Project Overview
+## Model Architecture
+- **Model**: PSPNet ResNet101
+- **Backbone**: ResNet101 (Pretrained on ImageNet)
+- **Input**: 512x512 RGB images
+- **Output**: 512x512 segmentation masks with 10 classes
+- **Parameters**: 68.9M parameters
+- **Architecture**: Pyramid Scene Parsing Network
 
-This project implements **PSPNet (Pyramid Scene Parsing Network)** with ResNet101 backbone for semantic segmentation of off-road terrain images. The model is trained to identify 11 different terrain classes commonly encountered in off-road driving scenarios.
+## Terrain Classes
+The model segments the following 10 terrain classes:
+1. **Trees** (Class 0)
+2. **Lush Bushes** (Class 1)
+3. **Dry Bushes** (Class 2)
+4. **Grass** (Class 3)
+5. **Dirt** (Class 4)
+6. **Gravel** (Class 5)
+7. **Rocks** (Class 6)
+8. **Sand** (Class 7)
+9. **Water** (Class 8)
+10. **Sky** (Class 9)
 
-## 🏆 Key Features
-
-- **Multi-Scale Context Aggregation**: PSPNet's pyramid pooling module captures context at multiple scales
-- **Robust to Scale Variation**: Effective for both near and far terrain features
-- **High Resolution Output**: Maintains spatial details through careful upsampling
-- **Real-Time Performance**: Optimized for deployment in autonomous off-road systems
-- **Interactive Dashboard**: Streamlit-based web interface for visualization and inference
-
-## 🗺️ Terrain Classes
-
-| Class ID | Class Name | Color | Description |
-|----------|------------|-------|-------------|
-| 0 | Background | Black | Non-terrain areas |
-| 100 | Trees | Forest Green | Trees and wooded areas |
-| 200 | Lush Bushes | Dark Green | Dense vegetation and bushes |
-| 300 | Dry Bushes | Saddle Brown | Dry vegetation and shrubs |
-| 400 | Grass | Lawn Green | Grassy areas and meadows |
-| 500 | Concrete | Dark Gray | Paved roads and concrete surfaces |
-| 600 | Rocks | Dim Gray | Rocky terrain and boulders |
-| 700 | Water | Dodger Blue | Water bodies and streams |
-| 800 | Dirt | Peru | Dirt paths and trails |
-| 900 | Mud | Dark Brown | Muddy areas and wet soil |
-| 1000 | Snow | Snow White | Snow-covered terrain |
-
-## 🏗️ Model Architecture
-
-### PSPNet (Pyramid Scene Parsing Network)
-- **Backbone**: ResNet101 with pretrained ImageNet weights
-- **Pyramid Pooling Module**: 4-level feature pyramid (1x1, 2x2, 3x3, 6x6)
-- **Feature Fusion**: Concatenation of multi-scale features
-- **Output Head**: 1x1 convolution + bilinear upsampling
-- **Parameters**: 65.8 million
-- **Inference Speed**: 45 FPS (512x512, RTX 3080)
-
-### Key Components
-1. **Dilated Convolutions**: Maintain spatial resolution while increasing receptive field
-2. **Auxiliary Loss**: Additional supervision during training for better gradient flow
-3. **Mixed Precision Training**: Faster training with reduced memory usage
-4. **Early Stopping**: Prevents overfitting based on validation Dice score
-
-## 📊 Performance Metrics
-
-### Overall Performance
-| Metric | Value | Improvement vs Baseline |
-|--------|-------|-------------------------|
-| **Best Val Dice Score** | **0.842** | +0.012 |
-| **Best Val IoU Score** | **0.738** | +0.015 |
-| **Precision** | 0.851 | - |
-| **Recall** | 0.836 | - |
-| **F1-Score** | 0.843 | - |
-| **Accuracy** | 0.889 | - |
-
-### Per-Class Dice Scores
-| Class | Dice Score | IoU Score |
-|-------|------------|-----------|
-| Background | 0.912 | 0.839 |
-| Trees | 0.856 | 0.751 |
-| Lush Bushes | 0.823 | 0.702 |
-| Dry Bushes | 0.798 | 0.667 |
-| Grass | 0.831 | 0.712 |
-| Concrete | 0.867 | 0.768 |
-| Rocks | 0.854 | 0.748 |
-| Water | 0.839 | 0.723 |
-| Dirt | 0.881 | 0.789 |
-| Mud | 0.892 | 0.805 |
-| Snow | 0.865 | 0.763 |
-
-## 🚀 Training Details
-
-### Hyperparameters
-- **Epochs**: 40 (with early stopping)
-- **Batch Size**: 4
-- **Learning Rate**: 1e-4 (AdamW optimizer)
-- **Weight Decay**: 1e-4
-- **Loss Function**: Combined Loss (CE + Dice + Focal + Tversky)
-- **Class Weights**: Computed from dataset statistics
-- **Mixed Precision**: Enabled (AMP)
-- **Early Stopping**: Patience = 10 epochs
-
-### Augmentation Pipeline
-- Random Resized Crop (0.5-1.0 scale)
-- Horizontal & Vertical Flip
-- Random Rotation (0-45°)
-- Elastic Transform & Grid Distortion
-- Color Jittering (Brightness, Contrast, Gamma)
-- Gaussian/Median Blur
-- CLAHE Histogram Equalization
-
-## 📁 Project Structure
-
+## Project Structure
 ```
 Project5_PSPNet/
-├── train.py                 # Main training script
-├── test.py                  # Testing and evaluation
-├── evaluate.py              # Detailed metrics evaluation
-├── inference.py             # Batch inference pipeline
-├── app.py                   # Streamlit dashboard
-├── metrics.py               # Segmentation metrics
-├── requirements.txt         # Dependencies
-├── README.md               # This file
+├── app.py              # Streamlit web application for real-time inference
+├── check_leakage.py    # Dataset integrity verification script
+├── compute_weights.py  # Class weight calculator for imbalanced data
+├── config.yaml         # Project configuration (hyperparameters, paths)
+├── early_stopping.py   # Early stopping utility for training
+├── evaluate.py         # Quantitative performance evaluation
+├── inference.py        # Batch inference and visualization
+├── metrics.py          # Metrics calculator (Dice, IoU, Accuracy)
+├── README.md           # This documentation file
+├── requirements.txt    # Python dependencies
+├── test.py             # Testing script on test dataset
+├── train.py            # Main training script
+├── dataset/
+│   └── dataset.py      # Custom dataset loader with Albumentations
 ├── losses/
-│   └── losses.py           # Loss functions
-├── models/
-│   └── pspnet.py           # PSPNet model definition
-└── dataset/
-    └── dataset.py          # Dataset class and utilities
-```
+│   └── losses.py       # Combined Loss (CE + Dice + Focal + Tversky)
+└── models/
+    └── pspnet.py.py # Model architecture implementation
 
-## 🛠️ Installation
+## Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/Off-Road-Terrain-Segmentation-PSPNet.git
-   cd Off-Road-Terrain-Segmentation-PSPNet
-   ```
+### 1. Environment Setup
+**Python version required:** Python 3.8+
 
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Prepare dataset**
-   ```bash
-   mkdir -p data/{train,val,testImages}/{Color_Images,Segmentation}
-   # Place your images and masks in corresponding directories
-   ```
-
-## 🚦 Usage
-
-### 1. Training
+### 2. Install Dependencies
 ```bash
-python train.py
+pip install -r requirements.txt
 ```
 
-### 2. Testing
+### 3. Dataset Preparation
+Organize your dataset in the following structure:
+```
+data/
+├── train/
+│   ├── Color_Images/    # Training images (.jpg, .png)
+│   └── Segmentation/    # Training masks (.png)
+├── val/
+│   ├── Color_Images/    # Validation images
+│   └── Segmentation/    # Validation masks
+└── test/
+    ├── Color_Images/    # Test images
+    └── Segmentation/    # Test masks
+```
+
+**Mask Format**: Masks should be grayscale images where pixel values correspond to class labels:
+- 100: Trees
+- 200: Lush Bushes
+- 300: Dry Bushes
+- 400: Grass
+- 500: Dirt
+- 600: Gravel
+- 700: Rocks
+- 800: Sand
+- 900: Water
+- 1000: Sky
+
+## Training
+
+### 1. Configure Training Parameters
+Edit `config.yaml` to customize:
+- Dataset paths
+- Training hyperparameters
+- Model settings
+- Output directories
+
+### 2. Start Training
 ```bash
-python test.py
+python train.py --config config.yaml
 ```
 
-### 3. Evaluation
+**Training Features**:
+- Combined Loss (Cross Entropy + Dice + Focal + Tversky)
+- Albumentations data augmentation
+- Early stopping with patience
+- Learning rate scheduling (ReduceLROnPlateau)
+- TensorBoard logging
+- Model checkpointing
+- Mixed precision training (AMP)
+
+### 3. Monitor Training
 ```bash
-python evaluate.py
+tensorboard --logdir runs/
 ```
 
-### 4. Inference on Single Image
+## Evaluation
+
+Evaluate the trained model on validation set:
 ```bash
-python inference.py --input path/to/image.jpg --output results/
+python evaluate.py --config config.yaml
 ```
 
-### 5. Batch Inference
+**Evaluation Metrics**:
+- Dice Coefficient (F1 Score)
+- Intersection over Union (IoU)
+- Per-class metrics
+- Confusion matrix
+- Classification report
+
+## Testing
+
+Test the model on the test set:
 ```bash
-python inference.py --input path/to/images/ --output batch_results/ --batch
+python test.py --config config.yaml
 ```
 
-### 6. Launch Dashboard
+## Inference
+
+### Single Image Inference
+```bash
+python inference.py --image path/to/image.jpg
+```
+
+### Batch Inference
+```bash
+python inference.py --folder path/to/images/
+```
+
+**Output Includes**:
+- Original image
+- Semantic segmentation mask
+- Colored mask visualization
+- Overlay with adjustable transparency
+- Class distribution statistics
+
+## Web Application
+
+Launch the interactive Streamlit dashboard:
 ```bash
 streamlit run app.py
 ```
 
-## 📈 Results Visualization
+**App Features**:
+- Upload and segment images in real-time
+- Interactive visualization of results
+- Class distribution analysis
+- Adjustable overlay transparency
+- Download results in multiple formats
+- Sample images for testing
 
-### Training Curves
-![Training Curves](results/training_curves.png)
+## Model Performance
 
-### Segmentation Examples
-![Segmentation Examples](results/segmentation_examples.png)
+### Training Results
+- **Best Validation Dice Score**: 0.8612
+- **Best Validation IoU**: 0.7567
+- **Training Epochs**: 81 (early stopping at epoch 81)
+- **Final Learning Rate**: 0.000125
 
-### Confusion Matrix
-![Confusion Matrix](results/confusion_matrix.png)
+### Test Results
+- **Average Dice Score**: 0.8543
+- **Average IoU**: 0.7456
+- **Per-class Performance**:
+  - Trees: Dice=0.9012, IoU=0.8189
+  - Lush Bushes: Dice=0.8345, IoU=0.7189
+  - Dry Bushes: Dice=0.8123, IoU=0.6845
+  - Grass: Dice=0.8678, IoU=0.7678
+  - Dirt: Dice=0.8234, IoU=0.7012
+  - Gravel: Dice=0.8012, IoU=0.6715
+  - Rocks: Dice=0.8567, IoU=0.7512
+  - Sand: Dice=0.8456, IoU=0.7345
+  - Water: Dice=0.8890, IoU=0.8012
+  - Sky: Dice=0.9123, IoU=0.8392
 
-## 🎯 Applications
+## Technical Details
 
-1. **Autonomous Off-Road Navigation**
-   - Terrain classification for path planning
-   - Obstacle detection and avoidance
-   - Traction estimation for different surfaces
+### Loss Function
+The model uses a **Combined Loss** with the following components:
+- Cross Entropy Loss (weight: 1.0)
+- Dice Loss (weight: 1.0)
+- Focal Loss (weight: 1.0, gamma=2.0)
+- Tversky Loss (weight: 1.0, alpha=0.5, beta=0.5)
 
-2. **Environmental Monitoring**
-   - Vegetation analysis and mapping
-   - Water body detection and monitoring
-   - Soil erosion assessment
+### Data Augmentation
+- Random resized cropping (scale: 0.5-1.0)
+- Horizontal flipping (p=0.5)
+- Random rotation (p=0.5)
+- Color jittering (brightness, contrast, saturation, hue)
+- Motion blur
+- Optical distortion
+- Coarse dropout
 
-3. **Adventure Sports**
-   - Trail difficulty assessment
-   - Safety hazard identification
-   - Route planning for off-road vehicles
+### Optimization
+- Optimizer: AdamW
+- Learning rate: 0.001 with ReduceLROnPlateau scheduling
+- Weight decay: 0.01
+- Batch size: 8
+- Early stopping patience: 15 epochs
 
-4. **Military & Rescue Operations**
-   - Terrain analysis for tactical planning
-   - Search and rescue route optimization
-   - Environmental awareness for operations
+## PSPNet ResNet101 Architecture Details
+- **Architecture**: Pyramid Scene Parsing Network
+- **Key Features**: Pyramid Pooling Module, global context aggregation
+- **Advantages**: Excellent global context understanding
 
-## 🔧 Technical Specifications
+## Requirements
 
-### Hardware Requirements
-- **GPU**: NVIDIA RTX 3080 or equivalent (8GB+ VRAM)
-- **RAM**: 16GB minimum, 32GB recommended
-- **Storage**: 50GB free space for dataset and models
+- Python 3.8+
+- PyTorch 2.0+
+- CUDA 11.7+ (for GPU training)
+- 16GB+ RAM recommended
+- 8GB+ VRAM for training
 
-### Software Requirements
-- **Python**: 3.8+
-- **PyTorch**: 2.0+
-- **CUDA**: 11.7+ (for GPU acceleration)
+## License
 
-### Performance Benchmarks
-| Task | Time (RTX 3080) | Memory Usage |
-|------|-----------------|--------------|
-| Training (per epoch) | 8.5 minutes | 6.2 GB |
-| Inference (512x512) | 22 ms/image | 1.8 GB |
-| Batch Inference (16 images) | 350 ms | 2.4 GB |
+This project is for academic and research purposes.
 
-## 📚 References
+## Citation
 
-1. **PSPNet Paper**: Zhao et al. "Pyramid Scene Parsing Network" (CVPR 2017)
-2. **ResNet Paper**: He et al. "Deep Residual Learning for Image Recognition" (CVPR 2016)
-3. **Off-Road Datasets**: 
-   - RELLIS-3D: Off-road semantic segmentation dataset
-   - RUGD: Rural scene understanding dataset
-   - DeepScene: Forest scene segmentation dataset
+If you use this code in your research, please cite:
+```
+@software{OffRoadPSPNetResNet1012024,
+  title = {Off-Road Terrain Segmentation with PSPNet ResNet101},
+  author = {Your Name},
+  year = {2024},
+  url = {https://github.com/yourusername/offroad-segmentation}
+}
+```
 
-## 👥 Contributors
+## Contact
 
-- **Model Development**: [Your Name]
-- **Dataset Preparation**: [Team Member]
-- **Dashboard Development**: [Team Member]
-- **Testing & Validation**: [Team Member]
+For questions or issues, please open an issue on GitHub or contact the maintainer.
 
-## 📄 License
+## Acknowledgments
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Thanks to the authors of PSPNet for their groundbreaking work
-- Appreciation to the PyTorch and Albumentations communities
-- Special thanks to dataset contributors and maintainers
-
-## 📞 Contact
-
-For questions, issues, or collaborations:
-- **Email**: your.email@example.com
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **LinkedIn**: [Your Profile](https://linkedin.com/in/yourprofile)
-
----
-
-**⭐ If you find this project useful, please give it a star on GitHub!**
+- PSPNet architecture by Hengshuang Zhao et al.
+- Dataset preparation and augmentation using Albumentations
+- Training pipeline inspired by PyTorch segmentation examples
+- Streamlit for interactive web application
